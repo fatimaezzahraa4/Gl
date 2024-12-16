@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Aéroports</title>
+    <link rel="stylesheet" href="path/to/your/styles.css">
+</head>
+<body>
+    <h1>Gestion des Aéroports</h1>
+
+    <!-- Liste des aéroports -->
+    <h2>Liste des Aéroports</h2>
+    <table id="airportTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Pays</th>
+                <th>Ville</th>
+                <th>Capacité</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Liste des aéroports affichée dynamiquement -->
+            <!-- La liste sera générée par JavaScript -->
+        </tbody>
+    </table>
+
+    <!-- Formulaire pour ajouter ou mettre à jour un aéroport -->
+    <h2 id="formTitle">Ajouter un Aéroport</h2>
+    <form id="airportForm">
+        <input type="hidden" id="airportId"> <!-- Champ caché pour l'ID -->
+        <label for="iataCode">Code IATA:</label>
+        <input type="text" id="iataCode" name="iataCode" required><br>
+
+        <label for="name">Nom de l'aéroport:</label>
+        <input type="text" id="name" name="name" required><br>
+
+        <label for="country">Pays de l'aéroport:</label>
+        <input type="text" id="country" name="country" required><br>
+
+        <label for="city">Ville de l'aéroport:</label>
+        <input type="text" id="city" name="city" required><br>
+
+        <label for="airportCapacity">Capacité de l'aéroport:</label>
+        <input type="text" id="airportCapacity" name="airportCapacity" required><br>
+
+        <button type="submit" id="submitButton">Ajouter Aéroport</button>
+    </form>
+
+    <script>
+        // Charger les aéroports via une requête GET
+        async function loadAirports() {
+            const response = await fetch('/dashboard/manageAirports');
+            const airports = await response.json();
+            const tableBody = document.querySelector('#airportTable tbody');
+            tableBody.innerHTML = ''; // Clear previous data
+            airports.forEach(airport => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${airport.id}</td>
+                    <td>${airport.name}</td>
+                    <td>${airport.country}</td>
+                    <td>${airport.city}</td>
+                    <td>${airport.airportCapacity}</td>
+                    <td>
+                        <button onclick="editAirport(${airport.id})">Editer</button>
+                        <button onclick="deleteAirport(${airport.id})">Supprimer</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Ajouter un nouvel aéroport via une requête POST
+        document.getElementById('airportForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('airportId').value;
+            const data = {
+                iataCode: document.getElementById('iataCode').value,
+                name: document.getElementById('name').value,
+                country: document.getElementById('country').value,
+                city: document.getElementById('city').value,
+                airportCapacity: document.getElementById('airportCapacity').value
+            };
+
+            let method = 'POST';
+            let url = '/dashboard/airport';
+            if (id) { // Si l'ID existe, on met à jour l'aéroport
+                method = 'PUT';
+                url = `/dashboard/airport/${id}`;
+            }
+
+            await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            resetForm(); // Réinitialiser le formulaire
+            loadAirports(); // Recharger la liste après ajout ou mise à jour
+        });
+
+        // Supprimer un aéroport via une requête DELETE
+        async function deleteAirport(id) {
+            await fetch(`/dashboard/airport/${id}`, {
+                method: 'DELETE'
+            });
+            loadAirports(); // Recharger la liste après suppression
+        }
+
+        // Fonction pour éditer un aéroport
+        async function editAirport(id) {
+            const response = await fetch(`/dashboard/airport/${id}`);
+            const airport = await response.json();
+
+            // Remplir le formulaire avec les données de l'aéroport à éditer
+            document.getElementById('airportId').value = airport.id;
+            document.getElementById('iataCode').value = airport.iataCode;
+            document.getElementById('name').value = airport.name;
+            document.getElementById('country').value = airport.country;
+            document.getElementById('city').value = airport.city;
+            document.getElementById('airportCapacity').value = airport.airportCapacity;
+
+            // Modifier le titre du formulaire et le texte du bouton
+            document.getElementById('formTitle').innerText = 'Mettre à jour un Aéroport';
+            document.getElementById('submitButton').innerText = 'Mettre à jour Aéroport';
+        }
+
+        // Réinitialiser le formulaire
+        function resetForm() {
+            document.getElementById('airportForm').reset();
+            document.getElementById('airportId').value = ''; // Clear hidden ID field
+            document.getElementById('formTitle').innerText = 'Ajouter un Aéroport';
+            document.getElementById('submitButton').innerText = 'Ajouter Aéroport';
+        }
+
+        // Charger les aéroports au chargement de la page
+        loadAirports();
+    </script>
+</body>
+</html>

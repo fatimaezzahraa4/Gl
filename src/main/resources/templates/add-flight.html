@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="ISO-8859-1">
+    <title>Flight Management</title>
+    <!-- Bootstrap CSS -->
+    <link th:rel="stylesheet" type="text/css" media="all" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
+    <style>
+        .sidebar {
+            height: 100vh;
+            background-color: #343a40;
+            color: white;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            display: block;
+            padding: 10px;
+        }
+        .sidebar a:hover {
+            background-color: #0056b3;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="d-flex">
+    <!-- Sidebar -->
+    <div class="sidebar p-3">
+        <h4 class="text-center">Menu</h4>
+        <hr>
+        <a th:href="@{/dashboard/manageAirports}">Gérer les Aéroports</a>
+        <a th:href="@{/dashboard/manageAirplanes}">Gérer les Avions</a>
+        <a th:href="@{/dashboard/manageFlights}">Gérer les Vols</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container my-5">
+        <h1 class="text-center">Add New Flight</h1>
+
+        <!-- Formulaire d'ajout de vol -->
+        <form th:action="@{/dashboard/addNew}" th:object="${flight}" method="post">
+            <!-- Flight Date -->
+            <div class="form-group">
+                <label for="flightDate">Flight Date</label>
+                <input type="date" id="flightDate" th:field="*{flightDate}" class="form-control">
+            </div>
+
+            <!-- Airline -->
+            <div class="form-group">
+                <label for="airline">Airline</label>
+                <select id="airline" th:field="*{airline.id}" class="form-control">
+                    <option value="">Select Airline</option>
+                    <option th:each="airline : ${airlines}" th:value="${airline.id}" th:text="${airline.name}"></option>
+                </select>
+            </div>
+
+            <!-- Origin Airport -->
+            <div class="form-group">
+                <label for="origin">Origin Airport</label>
+                <select id="origin" th:field="*{origin.id}" class="form-control">
+                    <option value="">Select Origin Airport</option>
+                    <option th:each="airport : ${airports}" th:value="${airport.id}" th:text="${airport.name}"></option>
+                </select>
+            </div>
+
+            <!-- Destination Airport -->
+            <div class="form-group">
+                <label for="destination">Destination Airport</label>
+                <select id="destination" th:field="*{destination.id}" class="form-control">
+                    <option value="">Select Destination Airport</option>
+                    <option th:each="airport : ${airports}" th:value="${airport.id}" th:text="${airport.name}"></option>
+                </select>
+            </div>
+
+            <!-- Airplane -->
+            <div class="form-group">
+                <label for="airplane">Airplane</label>
+                <select id="airplane" th:field="*{airplane.id}" class="form-control">
+                    <option value="">Select Airplane</option>
+                    <option th:each="airplane : ${airplanes}" th:value="${airplane.id}" th:text="${airplane.model}"></option>
+                </select>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary">Save Flight</button>
+            </div>
+        </form>
+
+        <hr>
+
+        <h1 class="text-center">Flight List</h1>
+
+        <!-- Search Form -->
+        <div class="form-group">
+            <label for="searchFlightId">Search Flight by ID</label>
+            <input type="number" id="searchFlightId" class="form-control" placeholder="Enter Flight ID">
+            <button onclick="searchFlightById()" class="btn btn-secondary mt-2">Search</button>
+        </div>
+
+        <!-- Flight Table -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Flight Date</th>
+                    <th>Airline</th>
+                    <th>Origin Airport</th>
+                    <th>Destination Airport</th>
+                    <th>Airplane</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="flightTableBody">
+                <tr th:each="flight : ${flights}">
+                    <td th:text="${flight.id}"></td>
+                    <td th:text="${flight.flightDate}"></td>
+                    <td th:text="${flight.airline.name}"></td>
+                    <td th:text="${flight.origin.name}"></td>
+                    <td th:text="${flight.destination.name}"></td>
+                    <td th:text="${flight.airplane.model}"></td>
+                    <td>
+                        <button class="btn btn-warning" th:onclick="'window.location.href=\'/dashboard/editFlight/' + ${flight.id} + '\''">Edit</button>
+                        <button class="btn btn-danger" th:onclick="'deleteFlight(' + ${flight.id} + ')'">Delete</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+<script>
+    function searchFlightById() {
+        const flightId = document.getElementById('searchFlightId').value;
+        if (flightId) {
+            window.location.href = '/dashboard/flight/' + flightId;  // Redirect to the specific flight page
+        } else {
+            alert('Please enter a flight ID');
+        }
+    }
+
+    function deleteFlight(flightId) {
+        if (confirm('Are you sure you want to delete this flight?')) {
+            fetch('/dashboard/deleteFlight/' + flightId, {
+                method: 'DELETE',
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();  // Refresh the page to remove the deleted flight
+                } else {
+                    alert('Error deleting flight');
+                }
+            });
+        }
+    }
+</script>
+</body>
+</html>
