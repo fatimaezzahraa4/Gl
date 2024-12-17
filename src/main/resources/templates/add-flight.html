@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="ISO-8859-1">
-    <title>Flight Management</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Vols</title>
     <!-- Bootstrap CSS -->
     <link th:rel="stylesheet" type="text/css" media="all" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
     <style>
@@ -22,6 +23,15 @@
             background-color: #0056b3;
             text-decoration: none;
         }
+        .editable {
+            background-color: #f9f9f9;
+        }
+        .btn-edit {
+            display: inline-block;
+        }
+        .btn-save {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -31,99 +41,116 @@
         <h4 class="text-center">Menu</h4>
         <hr>
         <a th:href="@{/dashboard/manageAirports}">Gérer les Aéroports</a>
-        <a th:href="@{/dashboard/manageAirplanes}">Gérer les Avions</a>
-        <a th:href="@{/dashboard/manageFlights}">Gérer les Vols</a>
+        <a th:href="@{/dashboard/manageAirplane}">Gérer les Avions</a>
+        <a th:href="@{/dashboard/add}">Gérer les Vols</a>
     </div>
 
     <!-- Main Content -->
     <div class="container my-5">
-        <h1 class="text-center">Add New Flight</h1>
+        <h1 class="text-center">Ajouter un Vol</h1>
 
         <!-- Formulaire d'ajout de vol -->
-        <form th:action="@{/dashboard/addNew}" th:object="${flight}" method="post">
-            <!-- Flight Date -->
+        <form th:action="@{/dashboard/addFlight}" th:object="${flight}" method="post">
+            <!-- Aéroport de départ -->
             <div class="form-group">
-                <label for="flightDate">Flight Date</label>
-                <input type="date" id="flightDate" th:field="*{flightDate}" class="form-control">
-            </div>
-
-            <!-- Airline -->
-            <div class="form-group">
-                <label for="airline">Airline</label>
-                <select id="airline" th:field="*{airline.id}" class="form-control">
-                    <option value="">Select Airline</option>
-                    <option th:each="airline : ${airlines}" th:value="${airline.id}" th:text="${airline.name}"></option>
-                </select>
-            </div>
-
-            <!-- Origin Airport -->
-            <div class="form-group">
-                <label for="origin">Origin Airport</label>
-                <select id="origin" th:field="*{origin.id}" class="form-control">
-                    <option value="">Select Origin Airport</option>
+                <label for="origin">Aéroport de Départ</label>
+                <select id="origin" th:field="*{origin}" class="form-control">
                     <option th:each="airport : ${airports}" th:value="${airport.id}" th:text="${airport.name}"></option>
                 </select>
             </div>
 
-            <!-- Destination Airport -->
+            <!-- Aéroport d'arrivée -->
             <div class="form-group">
-                <label for="destination">Destination Airport</label>
-                <select id="destination" th:field="*{destination.id}" class="form-control">
-                    <option value="">Select Destination Airport</option>
+                <label for="destination">Aéroport d'Arrivée</label>
+                <select id="destination" th:field="*{destination}" class="form-control">
                     <option th:each="airport : ${airports}" th:value="${airport.id}" th:text="${airport.name}"></option>
                 </select>
             </div>
 
-            <!-- Airplane -->
+            <!-- Date de départ -->
             <div class="form-group">
-                <label for="airplane">Airplane</label>
-                <select id="airplane" th:field="*{airplane.id}" class="form-control">
-                    <option value="">Select Airplane</option>
+                <label for="departureDate">Date de Départ</label>
+                <input type="datetime-local" id="departureDate" th:field="*{departureDate}" class="form-control">
+            </div>
+
+            <!-- Date d'arrivée -->
+            <div class="form-group">
+                <label for="arrivalDate">Date d'Arrivée</label>
+                <input type="datetime-local" id="arrivalDate" th:field="*{arrivalDate}" class="form-control">
+            </div>
+
+            <!-- Avion -->
+            <div class="form-group">
+                <label for="airplane">Avion</label>
+                <select id="airplane" th:field="*{airplane}" class="form-control">
                     <option th:each="airplane : ${airplanes}" th:value="${airplane.id}" th:text="${airplane.model}"></option>
+                </select>
+            </div>
+
+            <!-- Prix du Ticket -->
+            <div class="form-group">
+                <label for="ticketPrice">Prix du Ticket</label>
+                <input type="text" id="ticketPrice" th:field="*{ticketPrice}" class="form-control">
+            </div>
+
+            <!-- Durée du Vol -->
+            <div class="form-group">
+                <label for="duration">Durée du Vol</label>
+                <input type="text" id="duration" th:field="*{duration}" class="form-control">
+            </div>
+
+            <!-- Classe du Vol -->
+            <div class="form-group">
+                <label for="flightType">Classe du Vol</label>
+                <select id="flightType" th:field="*{flightType}" class="form-control">
+                    <option value="economique">Economique</option>
+                    <option value="1er class">1ère classe</option>
+                    <option value="business">Business class</option>
                 </select>
             </div>
 
             <!-- Submit Button -->
             <div class="text-center mt-4">
-                <button type="submit" class="btn btn-primary">Save Flight</button>
+                <button type="submit" class="btn btn-primary">Ajouter Vol</button>
             </div>
         </form>
-
         <hr>
 
-        <h1 class="text-center">Flight List</h1>
+        <h1 class="text-center">Liste des Vols</h1>
 
-        <!-- Search Form -->
-        <div class="form-group">
-            <label for="searchFlightId">Search Flight by ID</label>
-            <input type="number" id="searchFlightId" class="form-control" placeholder="Enter Flight ID">
-            <button onclick="searchFlightById()" class="btn btn-secondary mt-2">Search</button>
-        </div>
-
-        <!-- Flight Table -->
+        <!-- Table des Vols -->
         <table class="table table-striped">
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Flight Date</th>
-                    <th>Airline</th>
-                    <th>Origin Airport</th>
-                    <th>Destination Airport</th>
-                    <th>Airplane</th>
+                    <th>Numéro de Vol</th>
+                    <th>Aéroport de Départ</th>
+                    <th>Aéroport d'Arrivée</th>
+                    <th>Date de Départ</th>
+                    <th>Date d'Arrivée</th>
+                    <th>Avion</th>
+                    <th>Prix du Ticket</th>
+                    <th>Durée du Vol</th>
+                    <th>Classe du Vol</th>
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody id="flightTableBody">
-                <tr th:each="flight : ${flights}">
+            <tbody>
+                <tr th:each="flight : ${flights}" th:data-id="${flight.id}">
                     <td th:text="${flight.id}"></td>
-                    <td th:text="${flight.flightDate}"></td>
-                    <td th:text="${flight.airline.name}"></td>
-                    <td th:text="${flight.origin.name}"></td>
-                    <td th:text="${flight.destination.name}"></td>
-                    <td th:text="${flight.airplane.model}"></td>
+                    <td><span th:text="${flight.flightNumber}" class="editable" onclick="makeEditable(this)"></span></td>
+                    <td><span th:text="${flight.departureAirport.name}" class="editable" onclick="makeEditable(this)"></span></td>
+                    <td><span th:text="${flight.arrivalAirport.name}" class="editable" onclick="makeEditable(this)"></span></td>
+                    <td><span th:text="${#dates.format(flight.departureDate, 'dd/MM/yyyy HH:mm')}" class="editable" onclick="makeEditable(this)"></span></td>
+                    <td><span th:text="${#dates.format(flight.arrivalDate, 'dd/MM/yyyy HH:mm')}" class="editable" onclick="makeEditable(this)"></span></td>
+                    <td><span th:text="${flight.airplane.model}" class="editable" onclick="makeEditable(this)"></span></td>
+                    <td><span th:text="${flight.ticketPrice}" class="editable" onclick="makeEditable(this)"></span></td>
+                    <td><span th:text="${flight.duration}" class="editable" onclick="makeEditable(this)"></span></td>
+                    <td><span th:text="${flight.flightType}" class="editable" onclick="makeEditable(this)"></span></td>
                     <td>
-                        <button class="btn btn-warning" th:onclick="'window.location.href=\'/dashboard/editFlight/' + ${flight.id} + '\''">Edit</button>
-                        <button class="btn btn-danger" th:onclick="'deleteFlight(' + ${flight.id} + ')'">Delete</button>
+                        <button class="btn btn-warning btn-edit" onclick="editFlight(this)">Modifier</button>
+                        <button class="btn btn-success btn-save" th:onclick="'saveChanges(' + ${flight.id} + ')'">Sauvegarder</button>
+                        <button class="btn btn-danger" th:onclick="'deleteFlight(' + ${flight.id} + ')'">Supprimer</button>
                     </td>
                 </tr>
             </tbody>
@@ -135,28 +162,73 @@
 <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
 <script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
 <script>
-    function searchFlightById() {
-        const flightId = document.getElementById('searchFlightId').value;
-        if (flightId) {
-            window.location.href = '/dashboard/flight/' + flightId;  // Redirect to the specific flight page
-        } else {
-            alert('Please enter a flight ID');
-        }
+    function makeEditable(element) {
+        let currentText = element.innerText;
+        let input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentText;
+        input.classList.add('form-control');
+        element.innerHTML = '';
+        element.appendChild(input);
+        input.focus();
+
+        input.onblur = function () {
+            element.innerHTML = input.value;
+        };
     }
 
-    function deleteFlight(flightId) {
-        if (confirm('Are you sure you want to delete this flight?')) {
-            fetch('/dashboard/deleteFlight/' + flightId, {
-                method: 'DELETE',
-            }).then(response => {
-                if (response.ok) {
-                    location.reload();  // Refresh the page to remove the deleted flight
-                } else {
-                    alert('Error deleting flight');
-                }
-            });
-        }
+    function editFlight(button) {
+        const row = button.closest('tr');
+        const cells = row.querySelectorAll('.editable');
+
+        cells.forEach(cell => {
+            makeEditable(cell);
+        });
+
+        row.querySelector('.btn-edit').style.display = 'none';
+        row.querySelector('.btn-save').style.display = 'inline-block';
     }
-</script>
-</body>
-</html>
+
+    function saveChanges(flightId) {
+        const row = document.querySelector('tr[data-id="' + flightId + '"]');
+        const updatedFlight = {
+            id: flightId,
+            flightNumber: row.querySelector('td:nth-child(2) span').innerText,
+            departureAirport: row.querySelector('td:nth-child(3) span').innerText,
+            arrivalAirport: row.querySelector('td:nth-child(4) span').innerText,
+            departureDate: row.querySelector('td:nth-child(5) span').innerText,
+            arrivalDate: row.querySelector('td:nth-child(6) span').innerText,
+            airplane: row.querySelector('td:nth-child(7) span').innerText,			            ticketPrice: row.querySelector('td:nth-child(8) span').innerText,
+			            duration: row.querySelector('td:nth-child(9) span').innerText,
+			            flightType: row.querySelector('td:nth-child(10) span').innerText
+			        };
+
+			        // Vous pouvez envoyer cette mise à jour au serveur avec une requête AJAX ou une autre méthode
+			        fetch('/dashboard/updateFlight', {
+			            method: 'POST',
+			            headers: {
+			                'Content-Type': 'application/json',
+			            },
+			            body: JSON.stringify(updatedFlight),
+			        })
+			        .then(response => response.json())
+			        .then(data => {
+			            if (data.success) {
+			                alert('Les modifications ont été enregistrées avec succès.');
+			                // Vous pouvez ajouter des actions supplémentaires après l'enregistrement des données
+			            } else {
+			                alert('Une erreur est survenue lors de l\'enregistrement.');
+			            }
+			        })
+			        .catch(error => {
+			            console.error('Erreur:', error);
+			            alert('Une erreur est survenue lors de l\'enregistrement.');
+			        });
+
+			        // Masquer le bouton de sauvegarde et afficher le bouton de modification
+			        row.querySelector('.btn-save').style.display = 'none';
+			        row.querySelector('.btn-edit').style.display = 'inline-block';
+			    }
+			</script>
+
+			

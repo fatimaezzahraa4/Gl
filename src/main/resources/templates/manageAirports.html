@@ -1,146 +1,214 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Aéroports</title>
-    <link rel="stylesheet" href="path/to/your/styles.css">
+    <!-- Bootstrap CSS -->
+    <link th:rel="stylesheet" type="text/css" media="all" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
+    <style>
+        .sidebar {
+            height: 100vh;
+            background-color: #343a40;
+            color: white;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            display: block;
+            padding: 10px;
+        }
+        .sidebar a:hover {
+            background-color: #0056b3;
+            text-decoration: none;
+        }
+        .editable {
+            background-color: #f9f9f9;
+        }
+        .btn-edit {
+            display: inline-block;
+        }
+        .btn-save {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <h1>Gestion des Aéroports</h1>
+<div class="d-flex">
+    <!-- Sidebar -->
+    <div class="sidebar p-3">
+        <h4 class="text-center">Menu</h4>
+        <hr>
+		<a th:href="@{/dashboard/manageAirports}">Gérer les Aéroports</a>
+		       <a th:href="@{/dashboard/manageAirplane}">Gérer les Avions</a>
+			<a th:href="@{/dashboard/add}">Gérer les Vols</a>
+    </div>
 
-    <!-- Liste des aéroports -->
-    <h2>Liste des Aéroports</h2>
-    <table id="airportTable">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nom</th>
-                <th>Pays</th>
-                <th>Ville</th>
-                <th>Capacité</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Liste des aéroports affichée dynamiquement -->
-            <!-- La liste sera générée par JavaScript -->
-        </tbody>
-    </table>
+    <!-- Main Content -->
+    <div class="container my-5">
+        <h1 class="text-center">Ajouter un Aéroport</h1>
 
-    <!-- Formulaire pour ajouter ou mettre à jour un aéroport -->
-    <h2 id="formTitle">Ajouter un Aéroport</h2>
-    <form id="airportForm">
-        <input type="hidden" id="airportId"> <!-- Champ caché pour l'ID -->
-        <label for="iataCode">Code IATA:</label>
-        <input type="text" id="iataCode" name="iataCode" required><br>
+        <!-- Formulaire d'ajout d'aéroport -->
+        <form th:action="@{/dashboard/addAirport}" th:object="${airport}" method="post">
+            <!-- Code IATA -->
+            <div class="form-group">
+                <label for="IATACode">Code IATA</label>
+                <input type="text" id="IATACode" th:field="*{IATACode}" class="form-control">
+            </div>
 
-        <label for="name">Nom de l'aéroport:</label>
-        <input type="text" id="name" name="name" required><br>
+            <!-- Nom de l'Aéroport -->
+            <div class="form-group">
+                <label for="name">Nom de l'Aéroport</label>
+                <input type="text" id="name" th:field="*{name}" class="form-control">
+            </div>
 
-        <label for="country">Pays de l'aéroport:</label>
-        <input type="text" id="country" name="country" required><br>
+            <!-- Pays -->
+            <div class="form-group">
+                <label for="country">Pays de l'Aéroport</label>
+                <input type="text" id="country" th:field="*{country}" class="form-control">
+            </div>
 
-        <label for="city">Ville de l'aéroport:</label>
-        <input type="text" id="city" name="city" required><br>
+            <!-- Ville -->
+            <div class="form-group">
+                <label for="city">Ville de l'Aéroport</label>
+                <input type="text" id="city" th:field="*{city}" class="form-control">
+            </div>
 
-        <label for="airportCapacity">Capacité de l'aéroport:</label>
-        <input type="text" id="airportCapacity" name="airportCapacity" required><br>
+            <!-- Capacité -->
+            <div class="form-group">
+                <label for="airportCapacity">Capacité de l'Aéroport</label>
+                <input type="number" id="airportCapacity" th:field="*{airportCapacity}" class="form-control">
+            </div>
 
-        <button type="submit" id="submitButton">Ajouter Aéroport</button>
-    </form>
+            <!-- Submit Button -->
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary">Ajouter Aéroport</button>
+            </div>
+        </form>
+        <hr>
 
-    <script>
-        // Charger les aéroports via une requête GET
-        async function loadAirports() {
-            const response = await fetch('/dashboard/manageAirports');
-            const airports = await response.json();
-            const tableBody = document.querySelector('#airportTable tbody');
-            tableBody.innerHTML = ''; // Clear previous data
-            airports.forEach(airport => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${airport.id}</td>
-                    <td>${airport.name}</td>
-                    <td>${airport.country}</td>
-                    <td>${airport.city}</td>
-                    <td>${airport.airportCapacity}</td>
+        <h1 class="text-center">Liste des Aéroports</h1>
+
+        <!-- Table des Aéroports -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Code IATA</th>
+                    <th>Nom</th>
+                    <th>Pays</th>
+                    <th>Ville</th>
+                    <th>Capacité</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="airport : ${airports}" th:data-id="${airport.id}">
+                    <td th:text="${airport.id}"></td>
+                    <td><span th:text="${airport.IATACode}" class="editable" onclick="makeEditable(this)"></span></td>
+                    <td><span th:text="${airport.name}" class="editable" onclick="makeEditable(this)"></span></td>
+                    <td><span th:text="${airport.country}" class="editable" onclick="makeEditable(this)"></span></td>
+                    <td><span th:text="${airport.city}" class="editable" onclick="makeEditable(this)"></span></td>
+                    <td><span th:text="${airport.airportCapacity}" class="editable" onclick="makeEditable(this)"></span></td>
                     <td>
-                        <button onclick="editAirport(${airport.id})">Editer</button>
-                        <button onclick="deleteAirport(${airport.id})">Supprimer</button>
+                        <button class="btn btn-warning btn-edit" onclick="editAirport(this)">Modifier</button>
+						<button class="btn btn-success btn-save" th:onclick="'saveChanges(' + ${airport.id} + ')'">Sauvegarder</button>
+                        <button class="btn btn-danger" th:onclick="'deleteAirport(' + ${airport.id} + ')'">Supprimer</button>
                     </td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
-        // Ajouter un nouvel aéroport via une requête POST
-        document.getElementById('airportForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const id = document.getElementById('airportId').value;
-            const data = {
-                iataCode: document.getElementById('iataCode').value,
-                name: document.getElementById('name').value,
-                country: document.getElementById('country').value,
-                city: document.getElementById('city').value,
-                airportCapacity: document.getElementById('airportCapacity').value
-            };
+<!-- Bootstrap JS and dependencies -->
+<script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+<script>
+    function makeEditable(element) {
+        let currentText = element.innerText;
+        let input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentText;
+        input.classList.add('form-control');
+        element.innerHTML = '';
+        element.appendChild(input);
+        input.focus();
 
-            let method = 'POST';
-            let url = '/dashboard/airport';
-            if (id) { // Si l'ID existe, on met à jour l'aéroport
-                method = 'PUT';
-                url = `/dashboard/airport/${id}`;
-            }
+        input.onblur = function () {
+            element.innerHTML = input.value;
+        };
+    }
 
-            await fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
+    function editAirport(button) {
+        // Rendre les champs éditables
+        const row = button.closest('tr');
+        const cells = row.querySelectorAll('.editable');
 
-            resetForm(); // Réinitialiser le formulaire
-            loadAirports(); // Recharger la liste après ajout ou mise à jour
+        cells.forEach(cell => {
+            makeEditable(cell);
         });
 
-        // Supprimer un aéroport via une requête DELETE
-        async function deleteAirport(id) {
-            await fetch(`/dashboard/airport/${id}`, {
-                method: 'DELETE'
+        // Afficher le bouton "Sauvegarder" et masquer "Modifier"
+        row.querySelector('.btn-edit').style.display = 'none';
+        row.querySelector('.btn-save').style.display = 'inline-block';
+    }
+
+    function saveChanges(airportId) {
+        const row = document.querySelector(`tr[data-id="${airportId}"]`);
+        const updatedAirport = {
+            id: airportId,
+            IATACode: row.querySelector('td:nth-child(2)').innerText,
+            name: row.querySelector('td:nth-child(3)').innerText,
+            country: row.querySelector('td:nth-child(4)').innerText,
+            city: row.querySelector('td:nth-child(5)').innerText,
+            airportCapacity: row.querySelector('td:nth-child(6)').innerText
+        };
+
+        fetch(`/dashboard/updateAirport/${airportId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedAirport)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Aéroport mis à jour avec succès');
+            // Retour à l'état initial : masquage du bouton "Sauvegarder" et réaffichage du bouton "Modifier"
+            row.querySelector('.btn-edit').style.display = 'inline-block';
+            row.querySelector('.btn-save').style.display = 'none';
+
+            // Les champs deviennent non modifiables à nouveau
+            const cells = row.querySelectorAll('.editable');
+            cells.forEach(cell => {
+                const text = cell.innerText;
+                const span = document.createElement('span');
+                span.classList.add('editable');
+                span.innerText = text;
+                cell.innerHTML = '';
+                cell.appendChild(span);
             });
-            loadAirports(); // Recharger la liste après suppression
+        })
+        .catch(error => {
+            alert('Erreur lors de la mise à jour de l\'aéroport');
+        });
+    }
+
+    function deleteAirport(airportId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cet aéroport ?')) {
+            fetch('/dashboard/airport/' + airportId, {
+                method: 'DELETE',
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();  // Recharger la page après suppression
+                } else {
+                    alert('Erreur lors de la suppression de l\'aéroport');
+                }
+            });
         }
-
-        // Fonction pour éditer un aéroport
-        async function editAirport(id) {
-            const response = await fetch(`/dashboard/airport/${id}`);
-            const airport = await response.json();
-
-            // Remplir le formulaire avec les données de l'aéroport à éditer
-            document.getElementById('airportId').value = airport.id;
-            document.getElementById('iataCode').value = airport.iataCode;
-            document.getElementById('name').value = airport.name;
-            document.getElementById('country').value = airport.country;
-            document.getElementById('city').value = airport.city;
-            document.getElementById('airportCapacity').value = airport.airportCapacity;
-
-            // Modifier le titre du formulaire et le texte du bouton
-            document.getElementById('formTitle').innerText = 'Mettre à jour un Aéroport';
-            document.getElementById('submitButton').innerText = 'Mettre à jour Aéroport';
-        }
-
-        // Réinitialiser le formulaire
-        function resetForm() {
-            document.getElementById('airportForm').reset();
-            document.getElementById('airportId').value = ''; // Clear hidden ID field
-            document.getElementById('formTitle').innerText = 'Ajouter un Aéroport';
-            document.getElementById('submitButton').innerText = 'Ajouter Aéroport';
-        }
-
-        // Charger les aéroports au chargement de la page
-        loadAirports();
-    </script>
+    }
+</script>
 </body>
 </html>

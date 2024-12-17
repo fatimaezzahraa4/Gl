@@ -7,4 +7,5 @@ import com.projetGL.AirFlightManagementSystem.Entity.AdminProfile;
 
 public interface AdminProfileRepository extends JpaRepository<AdminProfile,Integer>{
 
+	
 }

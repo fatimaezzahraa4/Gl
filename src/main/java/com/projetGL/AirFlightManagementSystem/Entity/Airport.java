@@ -6,12 +6,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.Data;
 
 
 
 @Entity
-@Data
+
 @Table(name = "Airport")
 
 public class Airport {
@@ -21,7 +20,7 @@ public class Airport {
 	    private Long id;
 
 	    @Column(nullable = false)
-	    private String iataCode;
+	    private String IATACode;
 
 	    @Column(nullable = false)
 	    private String name;
@@ -43,13 +42,17 @@ public class Airport {
 			this.id = id;
 		}
 
-		public String getIataCode() {
-			return iataCode;
+		
+
+		public String getIATACode() {
+			return IATACode;
 		}
 
-		public void setIataCode(String iataCode) {
-			this.iataCode = iataCode;
+		public void setIATACode(String iATACode) {
+			IATACode = iATACode;
 		}
+		
+		
 
 		public String getName() {
 			return name;
@@ -95,10 +98,10 @@ public class Airport {
 			super();
 		}
 
-		public Airport(Long id, String iataCode, String name, String city, String country, int airportCapacity) {
+		public Airport(Long id, String IATACode, String name, String city, String country, int airportCapacity) {
 			super();
 			this.id = id;
-			this.iataCode = iataCode;
+			this.IATACode = IATACode;
 			this.name = name;
 			this.city = city;
 			this.country = country;
@@ -107,7 +110,7 @@ public class Airport {
 
 		@Override
 		public String toString() {
-			return "Airport [id=" + id + ", iataCode=" + iataCode + ", name=" + name + ", city=" + city + ", country="
+			return "Airport [id=" + id + ", IATA_Code=" + IATACode + ", name=" + name + ", city=" + city + ", country="
 					+ country + ", passengerCapacity=" + airportCapacity + "]";
 		}
 	    

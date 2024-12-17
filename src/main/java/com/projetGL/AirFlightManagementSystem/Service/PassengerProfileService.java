@@ -21,11 +21,6 @@ public class PassengerProfileService {
     private final UsersRepository usersRepository;
     
     
-    
-    
-
-
-
 
 
 	public PassengerProfileService(PassengerProfileRepository passengerProfileRepository,
@@ -42,7 +37,7 @@ public class PassengerProfileService {
 
 
 	public PassengerProfile addNew(PassengerProfile passengerProfile) {
-		return passengerProfileRepository.save(passengerProfile);
+		return passengerProfileRepository.saveAndFlush(passengerProfile);
 	}
 
 
@@ -51,8 +46,8 @@ public class PassengerProfileService {
 	        if (!(authentication instanceof AnonymousAuthenticationToken)) {
 	            String currentUsername = authentication.getName();
 	            Users users = usersRepository.findByEmail(currentUsername).orElseThrow(() -> new UsernameNotFoundException("User not found"));
-	            Optional<PassengerProfile> ppassengerProfile = getOne(users.getUserId());
-	            return ppassengerProfile.orElse(null);
+	            Optional<PassengerProfile> 	PpassengerProfile = getOne(users.getUserId());
+	            return PpassengerProfile.orElse(null);
 	        } else return null;
 
 	    }

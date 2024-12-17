@@ -3,6 +3,7 @@ package com.projetGL.AirFlightManagementSystem.Service;
 import java.util.Date;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -27,7 +28,7 @@ public class UsersService {
 	  private final PassengerProfileRepository passengerProfileRepository;
 	  private final PasswordEncoder passwordEncoder;
 
-	    
+	    @Autowired
 	   public UsersService(UsersRepository usersRepository, AdminProfileRepository adminProfileRepository,
 				PassengerProfileRepository passengerProfileRepository, PasswordEncoder passwordEncoder) {
 			super();
@@ -45,9 +46,9 @@ public class UsersService {
 	        int userTypeId = users.getUserTypeId().getUserTypeId();
 
 	        if (userTypeId == 1) {
-	        	adminProfileRepository.save(new AdminProfile(users));	        }
+	        	adminProfileRepository.save(new AdminProfile(savedUser));	        }
 	        else {
-	        	passengerProfileRepository.save(new PassengerProfile(users));
+	        	passengerProfileRepository.save(new PassengerProfile(savedUser));
 	        }
 
 	        return savedUser;
@@ -59,7 +60,6 @@ public class UsersService {
 
 	        Authentication authentication =SecurityContextHolder.getContext().getAuthentication();
 
-	        SecurityContextHolder.getContext().getAuthentication();	        
 	        
 	        if (!(authentication instanceof AnonymousAuthenticationToken)) {
 	            String username = authentication.getName();
@@ -69,7 +69,7 @@ public class UsersService {
 	            	AdminProfile  adminProfile = adminProfileRepository.findById(userId).orElse(new AdminProfile());
 	                return adminProfile;
 	            } else {
-	            	PassengerProfile passengerProfile =  passengerProfileRepository. findById(userId).orElse(new PassengerProfile(users));
+	            	PassengerProfile passengerProfile =  passengerProfileRepository. findById(userId).orElse(new PassengerProfile());
 	                return passengerProfile;
 	            }
 	        }

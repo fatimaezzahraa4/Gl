@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gérer les Avions</title>
+    <!-- Bootstrap CSS -->
+    <link th:rel="stylesheet" type="text/css" media="all" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
+    <style>
+        .sidebar {
+            height: 100vh;
+            background-color: #343a40;
+            color: white;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            display: block;
+            padding: 10px;
+        }
+        .sidebar a:hover {
+            background-color: #0056b3;
+            text-decoration: none;
+        }
+        .editable {
+            background-color: #f9f9f9;
+        }
+        .btn-edit {
+            display: inline-block;
+        }
+        .btn-save {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="d-flex">
+    <!-- Sidebar -->
+    <div class="sidebar p-3">
+        <h4 class="text-center">Menu</h4>
+        <hr>
+		<a th:href="@{/dashboard/manageAirports}">Gérer les Aéroports</a>
+		<a th:href="@{/dashboard/manageAirplane}">Gérer les Avions</a>
+		<a th:href="@{/dashboard/add}">Gérer les Vols</a>
+
+	</div>
+		
+    <!-- Main Content -->
+    <div class="container my-5">
+        <h1 class="text-center">Liste des Avions</h1>
+
+        <!-- Table des Avions -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Compagnie Aérienne</th>
+                    <th>Modèle</th>
+                    <th>Capacité</th>
+                    <th>Année de Fabrication</th>
+                    <th>Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="airplane : ${airplanes}" th:data-id="${airplane.id}">
+                    <td th:text="${airplane.id}"></td>
+                    <td><span th:text="${airplane.airline}" class="editable" onclick="makeEditable(this)"></span></td>
+                    <td><span th:text="${airplane.model}" class="editable" onclick="makeEditable(this)"></span></td>
+                    <td><span th:text="${airplane.seatCapacity}" class="editable" onclick="makeEditable(this)"></span></td>
+                    <td><span th:text="${airplane.yearOfManufacture}" class="editable" onclick="makeEditable(this)"></span></td>
+                    <td><span th:text="${airplane.type}" class="editable" onclick="makeEditable(this)"></span></td>
+                    <td>
+                        <button class="btn btn-warning btn-edit" onclick="editAirplane(this)">Modifier</button>
+                        <button class="btn btn-success btn-save" th:onclick="'saveChanges(' + ${airplane.id} + ')'">Sauvegarder</button>
+                        <button class="btn btn-danger" th:onclick="'deleteAirplane(' + ${airplane.id} + ')'">Supprimer</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Formulaire pour ajouter ou mettre à jour un avion -->
+        <h2 class="mt-5">Ajouter ou Modifier un Avion</h2>
+        <form th:action="@{/dashboard/addAirplane}" id="airplaneForm" method="post" th:object="${airplane}">
+            <input type="hidden" id="id" name="id" th:field="*{id}" />
+
+            <div class="form-group">
+                <label for="airline">Compagnie Aérienne</label>
+                <input type="text" id="airline" th:field="*{airline}" class="form-control" required />
+            </div>
+            <div class="form-group">
+                <label for="model">Modèle d'avion</label>
+                <input type="text" id="model" th:field="*{model}" class="form-control" required />
+            </div>
+            <div class="form-group">
+                <label for="seatCapacity">Capacité d'avion</label>
+                <input type="number" id="seatCapacity" th:field="*{seatCapacity}" class="form-control" required />
+            </div>
+            <div class="form-group">
+                <label for="yearOfManufacture">Année de Fabrication</label>
+                <input type="number" id="yearOfManufacture" th:field="*{yearOfManufacture}" class="form-control" required />
+            </div>
+            <div class="form-group">
+                <label for="type">Type de Classe</label>
+                <select id="type" th:field="*{type}" class="form-control" required>
+                    <option value="Classe Économique">Classe Économique</option>
+                    <option value="Classe Affaires">Classe Affaires</option>
+                    <option value="Première Classe">Première Classe</option>
+                </select>
+            </div>
+            <button type="submit" id="saveButton" class="btn btn-primary mt-3">Ajouter</button>
+        </form>
+    </div>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+<script>
+    function makeEditable(element) {
+        let currentText = element.innerText;
+        let input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentText;
+        input.classList.add('form-control');
+        element.innerHTML = '';
+        element.appendChild(input);
+        input.focus();
+
+        input.onblur = function () {
+            element.innerHTML = input.value;
+        };
+    }
+
+    function editAirplane(button) {
+        const row = button.closest('tr');
+        const cells = row.querySelectorAll('.editable');
+
+        cells.forEach(cell => {
+            makeEditable(cell);
+        });
+
+        row.querySelector('.btn-edit').style.display = 'none';
+        row.querySelector('.btn-save').style.display = 'inline-block';
+    }
+
+    function saveChanges(airplaneId) {
+        const row = document.querySelector(`tr[data-id="${airplaneId}"]`);
+        const updatedAirplane = {
+            id: airplaneId,
+            airline: row.querySelector('td:nth-child(2)').innerText,
+            model: row.querySelector('td:nth-child(3)').innerText,
+            seatCapacity: row.querySelector('td:nth-child(4)').innerText,
+            yearOfManufacture: row.querySelector('td:nth-child(5)').innerText,
+            type: row.querySelector('td:nth-child(6)').innerText
+        };
+
+        fetch(`/airplanes/${airplaneId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedAirplane)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Avion mis à jour avec succès');
+            row.querySelector('.btn-edit').style.display = 'inline-block';
+            row.querySelector('.btn-save').style.display = 'none';
+
+            const cells = row.querySelectorAll('.editable');
+            cells.forEach(cell => {
+                const text = cell.innerText;
+                const span = document.createElement('span');
+                span.classList.add('editable');
+                span.innerText = text;
+                cell.innerHTML = '';
+                cell.appendChild(span);
+            });
+        })
+        .catch(error => {
+            alert('Erreur lors de la mise à jour de l\'avion');
+        });
+    }
+
+   
+
+    function deleteAirplane(airplaneId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cet avion ?')) {
+            fetch('/airplanes/' + airplaneId, {
+                method: 'DELETE',
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Erreur lors de la suppression de l\'avion');
+                }
+            });
+        }
+    }
+</script>
+</body>
+</html>

@@ -12,81 +12,73 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
 import com.projetGL.AirFlightManagementSystem.Entity.Airport;
 import com.projetGL.AirFlightManagementSystem.Repository.AirportRepository;
+import com.projetGL.AirFlightManagementSystem.Service.AirportService;
 
-@RequestMapping("/dashboard")
-@Controller
-public class AirportController {
-    @Autowired
-    private AirportRepository repo;
-
-    // Méthode pour afficher la liste des aéroports sur une page HTML
-    @GetMapping("/manageAirports")
-    public String manageAirports(Model model) {
-        List<Airport> airports = repo.findAll();  // Récupérer la liste des aéroports
-        model.addAttribute("airports", airports);  // Ajouter la liste au modèle pour l'affichage
-        return "manageAirports";  // Nom de la vue (fichier manageAirports.html)
-    }
-
-    // Requêtes REST pour gérer les aéroports (ajout, modification, suppression)
-    @GetMapping
-    public List<Airport> getAllAirports() {
-        return repo.findAll();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Airport> getAirport(@PathVariable Integer id) {
-        Optional<Airport> airport = repo.findById(id);
-        if (airport.isEmpty()) {
-            return ResponseEntity.notFound().build(); // Retourne 404 si l'aéroport n'existe pas
-        }
-        return ResponseEntity.ok(airport.get());
-    }
-
-    @PostMapping
-    public ResponseEntity<Airport> createAirport(@RequestBody Airport airport) {
-        Airport newAirport = repo.save(airport);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newAirport);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Airport> updateAirport(@PathVariable Integer id, @RequestBody Airport updatedAirport) {
-        Optional<Airport> optionalAirport = repo.findById(id);
-        if (optionalAirport.isEmpty()) {
-            return ResponseEntity.notFound().build(); // Retourne 404 si l'aéroport n'existe pas
-        }
-
-        // Récupérer l'objet existant
-        Airport existingAirport = optionalAirport.get();
-
-        // Mettre à jour les champs
-        existingAirport.setIataCode(updatedAirport.getIataCode());
-        existingAirport.setName(updatedAirport.getName());
-        existingAirport.setCountry(updatedAirport.getCountry());
-        existingAirport.setCity(updatedAirport.getCity());
-        existingAirport.setAirportCapacity(updatedAirport.getAirportCapacity());
+	@RequestMapping("/dashboard")
+	@Controller
+	public class AirportController {
+		
+	    @Autowired
+	    private AirportRepository repo;
+	    @Autowired
+	    private AirportService airportService;
 
 
-        // Sauvegarder les modifications
-        Airport savedAirport = repo.save(existingAirport);
+	    @GetMapping("/manageAirports")
+	    public String manageAirports(Model model) {
+	        List<Airport> airports = repo.findAll();
+	        model.addAttribute("airports", airports);
+	        model.addAttribute("airport", new Airport());  // Adding an empty airport to the model for the form
+	        return "manageAirports";
+	    }
 
-        return ResponseEntity.ok(savedAirport);
-        }
-    
-    
-    
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAirport(@PathVariable Integer id) {
-        Optional<Airport> airport = repo.findById(id);
-        if (airport.isEmpty()) {
-            return ResponseEntity.notFound().build();  // Retourne 404 si l'aéroport n'existe pas
-        }
-        repo.deleteById(id);
-        return ResponseEntity.noContent().build();  // Retourne 204 après suppression
-    }
-    }
+	    @PostMapping("/addAirport")
+	    public String addAirport(@ModelAttribute("airport") Airport airport) {
+	        repo.save(airport);
+	        return "redirect:/dashboard/manageAirports";
+	    }
+
+	    @DeleteMapping("/airport/{id}")
+	    public String deleteAirport(@PathVariable Integer id) {
+	        Optional<Airport> airport = repo.findById(id);
+	        if (airport.isPresent()) {
+	            repo.deleteById(id);
+	        }
+	        return "redirect:/dashboard/manageAirports";
+	    }
+
+	    // Additional edit method (if needed)
+	    @GetMapping("/editAirport/{id}")
+	    public String editAirport(@PathVariable Integer id, Model model) {
+	        Optional<Airport> airport = repo.findById(id);
+	        if (airport.isPresent()) {
+	            model.addAttribute("airport", airport.get());
+	            return "editAirport";  // You can create a specific "editAirport.html" template
+	        }
+	        return "redirect:/dashboard/manageAirports";
+	    }
+
+	    @PostMapping("/updateAirport/{id}")  // Ajoute l'ID dans l'URL pour indiquer l'aéroport à mettre à jour
+	    @ResponseBody
+	    public ResponseEntity<Airport> updateAirport(@PathVariable Integer id, @RequestBody Airport airport) {
+	        try {
+	            Airport updatedAirport = airportService.updateAirport(id, airport);  // Passe l'ID et l'aéroport mis à jour
+	            if (updatedAirport != null) {
+	                return ResponseEntity.ok(updatedAirport);  // Retourner la réponse avec l'aéroport mis à jour
+	            } else {
+	                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);  // Si l'aéroport n'existe pas
+	            }
+	        } catch (Exception e) {
+	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);  // Erreur interne
+	        }
+	    }
+	
+	}
+

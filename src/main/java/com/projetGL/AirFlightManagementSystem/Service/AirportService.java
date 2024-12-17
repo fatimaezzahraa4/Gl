@@ -38,14 +38,15 @@ public class AirportService {
         Optional<Airport> existingAirportOpt = repo.findById(id);
         if (existingAirportOpt.isPresent()) {
             Airport existingAirport = existingAirportOpt.get();
-            existingAirport.setIataCode(updatedAirport.getIataCode());
+            existingAirport.setIATACode(updatedAirport.getIATACode());
             existingAirport.setName(updatedAirport.getName());
             existingAirport.setCountry(updatedAirport.getCountry());
             existingAirport.setCity(updatedAirport.getCity());
-            return repo.save(existingAirport);
+            return repo.save(existingAirport); // Enregistre et retourne l'aéroport mis à jour
         }
         return null; // Retourne null si l'aéroport n'existe pas
     }
+
 
     // Supprimer un aéroport
     public boolean deleteAirport(Integer id) {
